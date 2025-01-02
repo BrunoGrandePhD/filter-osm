@@ -6,7 +6,7 @@ This repository contains scripts for parsing, filtering, and converting OpenStre
 
 You can generate a JSON file of coffee shops listings in Seattle from an OpenStreetMap PBF file using the following commands:
 
-```console
+```bash
 # See 'Environment' section below for additional help
 python3 -m pip install -r requirements.txt
 python3 filter_cafes.py washington-latest.osm.pbf seattle-cafes.osm
