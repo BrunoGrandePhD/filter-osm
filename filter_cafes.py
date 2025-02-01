@@ -12,18 +12,17 @@ class CafeFilter:
 
     def node(self, n):
         # Check if node is outside Seattle's bounding box
-        if (
-            n.location.lat < self.SEATTLE_SOUTH
-            or n.location.lat > self.SEATTLE_NORTH
-            or n.location.lon < self.SEATTLE_WEST
-            or n.location.lon > self.SEATTLE_EAST
-        ):
-            return True
+        # if (
+        #     n.location.lat < self.SEATTLE_SOUTH
+        #     or n.location.lat > self.SEATTLE_NORTH
+        #     or n.location.lon < self.SEATTLE_WEST
+        #     or n.location.lon > self.SEATTLE_EAST
+        # ):
+        #     return True
 
         # Check if it's not a cafe
         return not (
-            ("cafe" in n.tags.get("amenity", ""))
-            or ("coffee_shop" in n.tags.get("cuisine", ""))
+            ("cafe" in n.tags.get("amenity", "")) or ("coffee_shop" in n.tags.get("cuisine", ""))
         )
 
 
