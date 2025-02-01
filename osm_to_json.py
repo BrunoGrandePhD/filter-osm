@@ -1,9 +1,8 @@
 import json
 import sys
-from collections import defaultdict
 
 import osmium
-from jsonschema import Draft7Validator, validate
+from jsonschema import validate
 
 
 class SchemaAnalyzer(osmium.SimpleHandler):
@@ -89,30 +88,37 @@ class JsonHandler(osmium.SimpleHandler):
     def _process_tags(self, tags):
         """Process OSM tags into a dictionary"""
         result = {}
+        extra_values = {}  # Store colon-separated values here temporarily
 
-        # First pass: handle non-colon keys
+        # First pass: handle all keys
         for tag in tags:
+            # Process the value first to handle semicolon-separated lists
+            processed_value = self._process_value(tag.k, tag.v)
+
             if ":" not in tag.k:
-                result[tag.k] = self._process_value(tag.k, tag.v)
-
-        # Second pass: handle colon keys
-        for tag in tags:
-            if ":" in tag.k:
+                # Handle normal keys
+                result[tag.k] = processed_value
+            else:
+                # Handle colon keys (e.g., name:en)
                 key_parts = tag.k.split(":")
-                value = self._process_value(tag.k, tag.v)
+                base_key = key_parts[0]
+                sub_key = key_parts[1]
 
-                # Get or create the parent structure
-                current = result
-                for part in key_parts[:-1]:
-                    if part not in current:
-                        current[part] = {}
-                    elif not isinstance(current[part], dict):
-                        # If we encounter a non-dict, convert it to a dict with _value
-                        current[part] = {"_value": current[part]}
-                    current = current[part]
+                # Initialize the extra values dictionary for this base key
+                if base_key not in extra_values:
+                    extra_values[base_key] = {}
 
-                # Set the final value
-                current[key_parts[-1]] = value
+                # Store the processed value in the extra values dictionary
+                extra_values[base_key][sub_key] = processed_value
+
+                # If this is the first value for this base key, also store it directly
+                if base_key not in result:
+                    result[base_key] = processed_value
+
+        # Second pass: merge extra values into result
+        for base_key, extra_dict in extra_values.items():
+            extra_key = f"{base_key}:extra"
+            result[extra_key] = extra_dict
 
         return result
 
